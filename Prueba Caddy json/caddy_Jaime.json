@@ -6,7 +6,9 @@
         "http": {
             "servers": {
                 "Cloud_Guardian": {
-                    "listen": [":80"],
+                    "listen": [
+                        ":80"
+                    ],
                     "timeouts": {
                         "read_header_timeout": "15s",
                         "idle_timeout": "5m",
@@ -19,7 +21,9 @@
                         {
                             "match": [
                                 {
-                                    "path": ["/login"]
+                                    "path": [
+                                        "/login"
+                                    ]
                                 }
                             ],
                             "handle": [
@@ -34,10 +38,6 @@
                                     "handler": "authenticate",
                                     "basic": {
                                         "users": {
-                                            "admin": "1234",
-                                            "Alberto": "5678",
-                                            "Ian": "9123",
-                                            "Jose": "4567",
                                             "Jaime": "8901"
                                         }
                                     }
@@ -51,7 +51,9 @@
                         {
                             "match": [
                                 {
-                                    "path": ["/api/*"]
+                                    "path": [
+                                        "/api/*"
+                                    ]
                                 }
                             ],
                             "handle": [
@@ -68,13 +70,15 @@
                         {
                             "match": [
                                 {
-                                    "path": ["/"]
+                                    "path": [
+                                        "/"
+                                    ]
                                 }
                             ],
                             "handle": [
                                 {
                                     "handler": "static_response",
-                                    "body": "Página principal accesible para IPs permitidas"
+                                    "body": "P\u00e1gina principal accesible para IPs permitidas"
                                 }
                             ]
                         }
@@ -83,8 +87,14 @@
             },
             "security": {
                 "remote_ip": {
-                    "allow": ["100.10.10.1", "192.168.1.100"],
-                    "deny": ["0.0.0.0/0", "192.168.0.0/24"]
+                    "allow": [
+                        "100.10.10.1",
+                        "192.168.1.100"
+                    ],
+                    "deny": [
+                        "0.0.0.0/0",
+                        "192.168.0.0/24"
+                    ]
                 }
             }
         }
