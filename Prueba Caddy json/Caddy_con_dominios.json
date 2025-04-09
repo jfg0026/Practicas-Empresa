@@ -1,0 +1,120 @@
+{
+    "admin": {
+        "listen": "167.235.155.72:2019"
+    },
+    "apps": {
+        "http": {
+            "servers": {
+                "Cloud_Guardian": {
+                    "listen": ["0.0.0.0:80"],
+                    "timeouts": {
+                        "read_header_timeout": "15s",
+                        "idle_timeout": "5m",
+                        "write_timeout": "15s",
+                        "header_timeout": "10s"
+                    },
+                    "max_connections": 50,
+                    "max_requests_per_connection": 20,
+                    "routes": [
+                        {
+                            "match": [
+                                {
+                                    "host": ["juan.localhost"]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "remote_ip",
+                                    "allow": ["192.168.1.1", "10.0.0.5"],  
+                                    "deny": ["0.0.0.0/0", "192.168.1.100"] 
+                                },
+                                {
+                                    "handler": "rate_limit",
+                                    "rate_limit": {
+                                        "requests": 3,
+                                        "window": "1m"
+                                    }
+                                },
+                                {
+                                    "handler": "authenticate",
+                                    "basic": {
+                                        "users": {
+                                            "juan": "1234"
+                                        }
+                                    }
+                                },
+                                {
+                                    "handler": "static_response",
+                                    "body": "Acceso concedido a Juan"
+                                }
+                            ]
+                        },
+                        {
+                            "match": [
+                                {
+                                    "host": ["pepe.localhost"]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "remote_ip",
+                                    "allow": ["192.168.2.2", "10.0.0.10"],
+                                    "deny": ["0.0.0.0/0", "192.168.1.100"] 
+                                },
+                                {
+                                    "handler": "rate_limit",
+                                    "rate_limit": {
+                                        "requests": 5,
+                                        "window": "1m"
+                                    }
+                                },
+                                {
+                                    "handler": "authenticate",
+                                    "basic": {
+                                        "users": {
+                                            "pepe": "5678"
+                                        }
+                                    }
+                                },
+                                {
+                                    "handler": "static_response",
+                                    "body": "Acceso concedido a Pepe"
+                                }
+                            ]
+                        },
+                        {
+                            "match": [
+                                {
+                                    "path": ["/api/*"]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "reverse_proxy",
+                                    "upstreams": [
+                                        {
+                                            "dial": "localhost:5000"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "match": [
+                                {
+                                    "path": ["/"]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "static_response",
+                                    "body": "Página principal accesible para IPs permitidas"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
