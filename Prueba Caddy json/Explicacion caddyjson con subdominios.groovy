@@ -1,154 +1,134 @@
 {
-    "admin": {
-        "listen": "167.235.155.72:2019"  // Define la dirección IP y el puerto donde el panel de administración de Caddy escuchará
-    },
-    "apps": {
-        "http": {
-            "servers": {
-                "Cloud_Guardian": {
-                    "listen": ["0.0.0.0:80"],  // El servidor escucha en todas las interfaces de red disponibles en el puerto 80
-                    "timeouts": {
-                        "read_header_timeout": "15s",  // Tiempo máximo para leer los encabezados de una solicitud HTTP
-                        "idle_timeout": "5m",  // Tiempo máximo de inactividad antes de cerrar la conexión
-                        "write_timeout": "15s",  // Tiempo máximo para escribir la respuesta
-                        "header_timeout": "10s"  // Tiempo máximo para leer los encabezados de la respuesta
-                    },
-                    "max_connections": 50,  // Límite global de conexiones simultáneas permitidas al servidor
-                    "max_requests_per_connection": 20,  // Número máximo de solicitudes permitidas por cada conexión
-                    "routes": [  // Definición de las rutas que manejará el servidor
-                        {
-                            "match": [
-                                {
-                                    "host": ["juan.localhost"],  // Coincide con solicitudes cuyo encabezado Host es 'juan.localhost'
-                                    "path": ["/login"]  // Ruta específica para el login de Juan
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "rate_limit",  // Limitar los intentos de login para Juan
-                                    "rate_limit": {
-                                        "requests": 3,  // Máximo de 3 intentos de login
-                                        "window": "1m"  // En 1 minuto
-                                    }
-                                },
-                                {
-                                    "handler": "authenticate",  // Solicita autenticación básica para Juan
-                                    "basic": {
-                                        "users": {
-                                            "juan": "1234"  // Usuario 'juan' con contraseña '1234'
-                                        }
-                                    }
-                                },
-                                {
-                                    "handler": "static_response",  // Responde con un mensaje estático si la autenticación es exitosa
-                                    "body": "Acceso concedido a Juan"  // Mensaje que se envía como respuesta cuando la solicitud es procesada
-                                }
-                            ]
-                        },
-                        {
-                            "match": [
-                                {
-                                    "host": ["juan.localhost"],  // Coincide con solicitudes cuyo encabezado Host es 'juan.localhost'
-                                    "path": ["/"]  // Ruta principal accesible después de login de Juan
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "rate_limit",  // Limitar las solicitudes HTTP de Juan
-                                    "rate_limit": {
-                                        "requests": 5,  // Juan puede realizar hasta 5 solicitudes por minuto
-                                        "window": "1m"  // En 1 minuto
-                                    }
-                                },
-                                {
-                                    "handler": "static_response",  // Responde con un mensaje estático
-                                    "body": "Página principal accesible para Juan"  // Mensaje de bienvenida para Juan
-                                }
-                            ]
-                        },
-                        {
-                            "match": [
-                                {
-                                    "host": ["pepe.localhost"],  // Coincide con solicitudes cuyo encabezado Host es 'pepe.localhost'
-                                    "path": ["/login"]  // Ruta específica para el login de Pepe
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "rate_limit",  // Limitar los intentos de login para Pepe
-                                    "rate_limit": {
-                                        "requests": 3,  // Máximo de 3 intentos de login
-                                        "window": "1m"  // En 1 minuto
-                                    }
-                                },
-                                {
-                                    "handler": "authenticate",  // Solicita autenticación básica para Pepe
-                                    "basic": {
-                                        "users": {
-                                            "pepe": "5678"  // Usuario 'pepe' con contraseña '5678'
-                                        }
-                                    }
-                                },
-                                {
-                                    "handler": "static_response",  // Responde con un mensaje estático si la autenticación es exitosa
-                                    "body": "Acceso concedido a Pepe"  // Mensaje que se envía como respuesta cuando la solicitud es procesada
-                                }
-                            ]
-                        },
-                        {
-                            "match": [
-                                {
-                                    "host": ["pepe.localhost"],  // Coincide con solicitudes cuyo encabezado Host es 'pepe.localhost'
-                                    "path": ["/"]  // Ruta principal accesible después de login de Pepe
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "rate_limit",  // Limitar las solicitudes HTTP de Pepe
-                                    "rate_limit": {
-                                        "requests": 7,  // Pepe puede realizar hasta 7 solicitudes por minuto
-                                        "window": "1m"  // En 1 minuto
-                                    }
-                                },
-                                {
-                                    "handler": "static_response",  // Responde con un mensaje estático
-                                    "body": "Página principal accesible para Pepe"  // Mensaje de bienvenida para Pepe
-                                }
-                            ]
-                        },
-                        {
-                            "match": [
-                                {
-                                    "path": ["/api/*"]  // Coincide con solicitudes cuyo path comienza con '/api/'
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "reverse_proxy",  // Redirige las solicitudes a un servidor backend
-                                    "upstreams": [
-                                        {
-                                            "dial": "localhost:5000"  // Redirige las solicitudes a 'localhost:5000'
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "match": [
-                                {
-                                    "path": ["/"]  // Ruta principal accesible para cualquier IP permitida
-                                }
-                            ],
-                            "handle": [
-                                {
-                                    "handler": "static_response",  // Responde con un mensaje estático para la página principal
-                                    "body": "Página principal accesible para IPs permitidas"  // Mensaje de bienvenida para usuarios permitidos
-                                }
-                            ]
-                        }
-                    ]
+  // Configuración del panel de administración de Caddy
+  "admin": {
+    // Dirección y puerto donde escucha el panel de administración
+    "listen": "167.235.155.72:2019"
+  },
+  "apps": {
+    "http": {
+      "servers": {
+        // Nombre del servidor HTTP
+        "Cloud_Guardian": {
+          // Puertos y direcciones IP en los que escucha el servidor
+          "listen": ["0.0.0.0:80"],
+          // Configuración de tiempos de espera (timeouts)
+          "timeouts": {
+            "read_header_timeout": "15s",  // Tiempo para leer cabecera
+            "idle_timeout": "5m",          // Tiempo de espera de conexión inactiva
+            "write_timeout": "15s",        // Tiempo para escribir respuesta
+            "header_timeout": "10s"        // Tiempo límite para procesar cabeceras
+          },
+          // Límite máximo de conexiones simultáneas
+          "max_connections": 50,
+          // Límite de solicitudes por conexión
+          "max_requests_per_connection": 20,
+          // Rutas (reglas de manejo de peticiones)
+          "routes": [
+            {
+              // Bloqueo de IPs específicas para el usuario "juan"
+              "match": [
+                {
+                  "remote_ip": {
+                    "deny": ["192.168.1.0/24"]  // Rango de IPs denegadas
+                  },
+                  "host": ["juan.localhost"]     // Solo aplica a este dominio
                 }
+              ],
+              "handle": [
+                {
+                  "handler": "static_response",  // Manejador de respuesta estática
+                  "status_code": 403,            // Código de estado HTTP (Prohibido)
+                  "body": "Acceso denegado por IP para Juan"  // Mensaje devuelto
+                }
+              ]
+            },
+            {
+              // Permitir acceso solo desde una IP concreta para "juan"
+              "match": [
+                {
+                  "remote_ip": {
+                    "allow": ["192.168.1.100/32"]  // IP permitida (un solo host)
+                  },
+                  "host": ["juan.localhost"]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "static_response",
+                  "body": "Acceso concedido a Juan desde IP permitida"
+                }
+              ]
+            },
+            {
+              // Bloqueo de IPs específicas para "pepe"
+              "match": [
+                {
+                  "remote_ip": {
+                    "deny": ["10.10.0.0/16"]  // Rango de IPs denegadas
+                  },
+                  "host": ["pepe.localhost"]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "static_response",
+                  "status_code": 403,
+                  "body": "Acceso denegado por IP para Pepe"
+                }
+              ]
+            },
+            {
+              // Permitir acceso solo desde una IP específica para "pepe"
+              "match": [
+                {
+                  "remote_ip": {
+                    "allow": ["10.10.1.50"]  // IP concreta permitida
+                  },
+                  "host": ["pepe.localhost"]
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "static_response",
+                  "body": "Acceso concedido a Pepe desde IP permitida"
+                }
+              ]
+            },
+            {
+              // Redirección de tráfico a un backend (API)
+              "match": [
+                {
+                  "path": ["/api/*"]  // Coincide con cualquier ruta bajo /api
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "reverse_proxy",  // Proxy inverso
+                  "upstreams": [
+                    {
+                      "dial": "localhost:5000"  // Dirección interna del backend
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              // Ruta por defecto para otras IPs/dominios no bloqueados
+              "match": [
+                {
+                  "path": ["/"]  // Ruta raíz
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "static_response",
+                  "body": "Página principal accesible para IPs permitidas"
+                }
+              ]
             }
+          ]
         }
+      }
     }
+  }
 }
